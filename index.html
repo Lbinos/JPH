@@ -163,6 +163,24 @@
       white-space: nowrap;
     }
 
+    .decimal-btn {
+      background: var(--card2);
+      border: 1.5px solid var(--accent);
+      border-radius: 8px;
+      color: var(--accent);
+      font-size: 18px;
+      font-weight: 700;
+      padding: 6px 13px;
+      cursor: pointer;
+      flex-shrink: 0;
+      line-height: 1;
+      transition: background 0.12s;
+    }
+
+    .decimal-btn:active {
+      background: rgba(79,142,247,0.2);
+    }
+
     /* ── Slider ── */
     .slider-row {
       display: flex;
@@ -293,8 +311,16 @@
     }
 
     /* inline TCT input inside result box */
+    .tct-input-row {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+
     .tct-inline-input {
-      width: 100%;
+      flex: 1;
+      min-width: 0;
       background: rgba(255,255,255,0.05);
       border: 1px solid var(--border);
       border-radius: 6px;
@@ -304,8 +330,6 @@
       padding: 3px 6px !important;
       text-align: center;
       outline: none;
-      margin-bottom: 5px;
-      flex-shrink: 0;
     }
 
     .tct-inline-input:focus {
@@ -314,8 +338,25 @@
     }
 
     .tct-inline-input::placeholder {
-      font-size: 11px !important;
+      font-size: 10px !important;
       color: var(--border);
+    }
+
+    .decimal-btn-sm {
+      background: var(--card2);
+      border: 1px solid var(--accent);
+      border-radius: 5px;
+      color: var(--accent);
+      font-size: 14px;
+      font-weight: 700;
+      padding: 2px 6px;
+      cursor: pointer;
+      flex-shrink: 0;
+      line-height: 1.4;
+    }
+
+    .decimal-btn-sm:active {
+      background: rgba(79,142,247,0.2);
     }
 
     /* ── Bottom row ── */
@@ -385,7 +426,8 @@
       <div class="field">
         <label>Cycle Time per Job</label>
         <div class="input-row">
-          <input type="text" id="cycleInput" class="num-input" inputmode="decimal" placeholder="e.g. 136" />
+          <input type="text" id="cycleInput" class="num-input" inputmode="numeric" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="e.g. 136" />
+          <button class="decimal-btn" id="cycleDecBtn">,</button>
           <span class="unit-badge">sec</span>
         </div>
       </div>
@@ -419,7 +461,10 @@
         </div>
         <div class="result-item" id="tctItem">
           <div class="result-label">TCT target</div>
-          <input type="text" id="tctInput" class="tct-inline-input" inputmode="decimal" placeholder="e.g. 120 sec" />
+          <div class="tct-input-row">
+            <input type="text" id="tctInput" class="tct-inline-input" inputmode="numeric" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="target sec" />
+            <button class="decimal-btn-sm" id="tctDecBtn">,</button>
+          </div>
           <div class="result-value" id="cycleSeconds">—</div>
           <div class="result-unit">actual sec</div>
           <div class="tct-target" id="tctTarget"></div>
@@ -446,6 +491,18 @@
     const tctItem      = document.getElementById('tctItem');
     const tctTarget    = document.getElementById('tctTarget');
     const resetBtn     = document.getElementById('resetBtn');
+
+    function insertDecimal(input) {
+      if (input.value.includes('.') || input.value.includes(',')) return;
+      const pos = input.selectionStart ?? input.value.length;
+      input.value = input.value.slice(0, pos) + ',' + input.value.slice(pos);
+      input.setSelectionRange(pos + 1, pos + 1);
+      input.focus();
+      calculate();
+    }
+
+    document.getElementById('cycleDecBtn').addEventListener('click', () => insertDecimal(cycleInput));
+    document.getElementById('tctDecBtn').addEventListener('click',   () => insertDecimal(tctInput));
 
     function parseNum(str) {
       return parseFloat(String(str).replace(',', '.'));
