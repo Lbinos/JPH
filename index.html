@@ -118,7 +118,8 @@
       align-items: center;
     }
 
-    input[type="number"] {
+    input[type="number"],
+    input.num-input {
       flex: 1;
       background: var(--input-bg);
       border: 1.5px solid var(--border);
@@ -134,11 +135,13 @@
       min-width: 0;
     }
 
-    input[type="number"]:focus {
+    input[type="number"]:focus,
+    input.num-input:focus {
       border-color: var(--accent);
     }
 
-    input[type="number"]::placeholder {
+    input[type="number"]::placeholder,
+    input.num-input::placeholder {
       color: var(--border);
       font-weight: 400;
       font-size: 15px;
@@ -382,7 +385,7 @@
       <div class="field">
         <label>Cycle Time per Job</label>
         <div class="input-row">
-          <input type="number" id="cycleInput" inputmode="decimal" placeholder="e.g. 136" min="0" step="any" />
+          <input type="text" id="cycleInput" class="num-input" inputmode="decimal" placeholder="e.g. 136" />
           <span class="unit-badge">sec</span>
         </div>
       </div>
@@ -416,7 +419,7 @@
         </div>
         <div class="result-item" id="tctItem">
           <div class="result-label">TCT target</div>
-          <input type="number" id="tctInput" class="tct-inline-input" inputmode="decimal" placeholder="e.g. 120 sec" min="0" step="any" />
+          <input type="text" id="tctInput" class="tct-inline-input" inputmode="decimal" placeholder="e.g. 120 sec" />
           <div class="result-value" id="cycleSeconds">—</div>
           <div class="result-unit">actual sec</div>
           <div class="tct-target" id="tctTarget"></div>
@@ -444,6 +447,10 @@
     const tctTarget    = document.getElementById('tctTarget');
     const resetBtn     = document.getElementById('resetBtn');
 
+    function parseNum(str) {
+      return parseFloat(String(str).replace(',', '.'));
+    }
+
     function fmt(n, decimals = 1) {
       if (!isFinite(n) || n <= 0) return '—';
       const d = n < 10 ? 2 : decimals;
@@ -451,7 +458,7 @@
     }
 
     function calculate() {
-      const raw  = parseFloat(cycleInput.value);
+      const raw  = parseNum(cycleInput.value);
       const rate = parseFloat(rateSlider.value) || 100;
 
       if (isNaN(raw) || raw <= 0) {
@@ -471,7 +478,7 @@
       cycleSeconds.textContent = secs < 1 ? secs.toFixed(3) : fmt(secs, 1);
       [jphBase, jphEffective, cycleSeconds].forEach(el => el.classList.remove('empty'));
 
-      const tct = parseFloat(tctInput.value);
+      const tct = parseNum(tctInput.value);
       tctItem.classList.remove('over-tct', 'under-tct');
       if (!isNaN(tct) && tct > 0) {
         if (raw > tct) {
