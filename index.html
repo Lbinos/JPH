@@ -265,6 +265,30 @@
       letter-spacing: 0;
     }
 
+    .result-item.over-tct {
+      border-color: rgba(239,68,68,0.5);
+      background: rgba(239,68,68,0.08);
+    }
+
+    .result-item.over-tct .result-value {
+      color: #ef4444;
+    }
+
+    .result-item.under-tct {
+      border-color: rgba(34,197,94,0.5);
+      background: rgba(34,197,94,0.08);
+    }
+
+    .result-item.under-tct .result-value {
+      color: #22c55e;
+    }
+
+    .tct-target {
+      font-size: 9px;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+
     /* ── Bottom row ── */
     .bottom-row {
       display: flex;
@@ -330,9 +354,16 @@
     <div class="card">
       <div class="card-title">Cycle Time</div>
       <div class="field">
-        <label>Cycle Time per Job</label>
+        <label>Actual Cycle Time</label>
         <div class="input-row">
-          <input type="number" id="cycleInput" inputmode="decimal" placeholder="e.g. 45" min="0" step="any" />
+          <input type="number" id="cycleInput" inputmode="decimal" placeholder="e.g. 136" min="0" step="any" />
+          <span class="unit-badge">sec</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Target Cycle Time (TCT)</label>
+        <div class="input-row">
+          <input type="number" id="tctInput" inputmode="decimal" placeholder="e.g. 120" min="0" step="any" />
           <span class="unit-badge">sec</span>
         </div>
       </div>
@@ -364,10 +395,11 @@
           <div class="result-value" id="jphBase">—</div>
           <div class="result-unit">jobs / hr</div>
         </div>
-        <div class="result-item">
-          <div class="result-label">Cycle / Job</div>
+        <div class="result-item" id="tctItem">
+          <div class="result-label">TCT</div>
           <div class="result-value" id="cycleSeconds">—</div>
           <div class="result-unit">seconds</div>
+          <div class="tct-target" id="tctTarget"></div>
         </div>
       </div>
     </div>
@@ -382,11 +414,14 @@
 
   <script>
     const cycleInput   = document.getElementById('cycleInput');
+    const tctInput     = document.getElementById('tctInput');
     const rateSlider   = document.getElementById('rateSlider');
     const rateDisplay  = document.getElementById('rateDisplay');
     const jphBase      = document.getElementById('jphBase');
     const jphEffective = document.getElementById('jphEffective');
     const cycleSeconds = document.getElementById('cycleSeconds');
+    const tctItem      = document.getElementById('tctItem');
+    const tctTarget    = document.getElementById('tctTarget');
     const resetBtn     = document.getElementById('resetBtn');
 
     function fmt(n, decimals = 1) {
@@ -415,6 +450,20 @@
       jphEffective.textContent = fmt(effect);
       cycleSeconds.textContent = secs < 1 ? secs.toFixed(3) : fmt(secs, 1);
       [jphBase, jphEffective, cycleSeconds].forEach(el => el.classList.remove('empty'));
+
+      const tct = parseFloat(tctInput.value);
+      tctItem.classList.remove('over-tct', 'under-tct');
+      if (!isNaN(tct) && tct > 0) {
+        if (raw > tct) {
+          tctItem.classList.add('over-tct');
+          tctTarget.textContent = `TARGET: ${tct}s  ▲ +${fmt(raw - tct, 1)}s`;
+        } else {
+          tctItem.classList.add('under-tct');
+          tctTarget.textContent = `TARGET: ${tct}s  ✓`;
+        }
+      } else {
+        tctTarget.textContent = '';
+      }
     }
 
     rateSlider.addEventListener('input', () => {
@@ -423,11 +472,15 @@
     });
 
     cycleInput.addEventListener('input', calculate);
+    tctInput.addEventListener('input', calculate);
 
     resetBtn.addEventListener('click', () => {
       cycleInput.value = '';
+      tctInput.value   = '';
       rateSlider.value = 100;
       rateDisplay.textContent = '100%';
+      tctItem.classList.remove('over-tct', 'under-tct');
+      tctTarget.textContent = '';
       calculate();
       cycleInput.focus();
     });
