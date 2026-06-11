@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#1a1a2e" />
+  <title>JPH Calculator</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    :root {
+      --bg: #0f0f1a;
+      --card: #1a1a2e;
+      --card2: #16213e;
+      --accent: #4f8ef7;
+      --accent2: #7c5cbf;
+      --green: #22c55e;
+      --text: #f0f0f0;
+      --muted: #8888aa;
+      --border: #2a2a45;
+      --input-bg: #0d0d20;
+      --radius: 16px;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100dvh;
+      padding: env(safe-area-inset-top, 20px) 16px env(safe-area-inset-bottom, 20px);
+      overflow-x: hidden;
+    }
+
+    header {
+      width: 100%;
+      max-width: 420px;
+      text-align: center;
+      padding: 24px 0 8px;
+    }
+
+    header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    header p {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    main {
+      width: 100%;
+      max-width: 420px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+    }
+
+    .card-title {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+
+    .field:last-child {
+      margin-bottom: 0;
+    }
+
+    .field label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--muted);
+    }
+
+    .input-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    input[type="number"] {
+      flex: 1;
+      background: var(--input-bg);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      font-size: 20px;
+      font-weight: 600;
+      padding: 12px 16px;
+      outline: none;
+      -webkit-appearance: none;
+      appearance: none;
+      transition: border-color 0.15s;
+      min-width: 0;
+    }
+
+    input[type="number"]:focus {
+      border-color: var(--accent);
+    }
+
+    input[type="number"]::placeholder {
+      color: var(--border);
+      font-weight: 400;
+      font-size: 16px;
+    }
+
+    /* hide number spinners */
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+    }
+
+    .unit-badge {
+      background: var(--card2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    /* Time unit toggle */
+    .seg-control {
+      display: flex;
+      background: var(--input-bg);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .seg-control button {
+      flex: 1;
+      padding: 10px 4px;
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .seg-control button.active {
+      background: var(--accent);
+      color: #fff;
+      border-radius: 9px;
+    }
+
+    /* Result card */
+    .result-card {
+      background: linear-gradient(135deg, #1a2a4a, #1a1a35);
+      border: 1px solid rgba(79, 142, 247, 0.3);
+    }
+
+    .result-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .result-item {
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 12px;
+      text-align: center;
+    }
+
+    .result-item.primary {
+      grid-column: 1 / -1;
+      background: linear-gradient(135deg, rgba(79,142,247,0.15), rgba(124,92,191,0.15));
+      border-color: rgba(79,142,247,0.4);
+    }
+
+    .result-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .result-value {
+      font-size: 36px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      color: var(--accent);
+      line-height: 1.1;
+    }
+
+    .result-item:not(.primary) .result-value {
+      font-size: 26px;
+    }
+
+    .result-unit {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .result-value.empty {
+      color: var(--border);
+      font-size: 28px;
+      font-weight: 400;
+    }
+
+    /* Efficiency slider */
+    .slider-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    input[type="range"] {
+      flex: 1;
+      -webkit-appearance: none;
+      height: 6px;
+      border-radius: 3px;
+      background: var(--border);
+      outline: none;
+      cursor: pointer;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(79,142,247,0.5);
+    }
+
+    .pct-display {
+      background: var(--input-bg);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      min-width: 58px;
+      text-align: center;
+    }
+
+    /* Reset button */
+    .btn-reset {
+      width: 100%;
+      padding: 15px;
+      background: var(--card2);
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      color: var(--muted);
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+      margin-top: 4px;
+    }
+
+    .btn-reset:active {
+      background: var(--border);
+      color: var(--text);
+    }
+
+    /* Info row */
+    .formula-note {
+      font-size: 11px;
+      color: var(--muted);
+      text-align: center;
+      padding: 4px 0 12px;
+      opacity: 0.7;
+    }
+
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg: #f2f4f8;
+        --card: #ffffff;
+        --card2: #f0f2f8;
+        --text: #111122;
+        --muted: #6666aa;
+        --border: #d0d4e8;
+        --input-bg: #f8f9ff;
+        --bg-grad1: #e8ecff;
+        --bg-grad2: #f0f4ff;
+      }
+      .result-card {
+        background: linear-gradient(135deg, #e8f0ff, #f0e8ff);
+        border-color: rgba(79,142,247,0.25);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>JPH Calculator</h1>
+    <p>Jobs Per Hour from Cycle Time</p>
+  </header>
+
+  <main>
+
+    <!-- Inputs -->
+    <div class="card">
+      <div class="card-title">Cycle Time</div>
+
+      <div class="field">
+        <label>Time Unit</label>
+        <div class="seg-control" id="unitToggle">
+          <button class="active" data-unit="sec">Seconds</button>
+          <button data-unit="min">Minutes</button>
+          <button data-unit="hr">Hours</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Cycle Time per Job</label>
+        <div class="input-row">
+          <input
+            type="number"
+            id="cycleInput"
+            inputmode="decimal"
+            placeholder="e.g. 45"
+            min="0"
+            step="any"
+          />
+          <span class="unit-badge" id="unitLabel">sec</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Operation Rate -->
+    <div class="card">
+      <div class="card-title">Operation Rate</div>
+
+      <div class="field">
+        <label>Efficiency / Availability</label>
+        <div class="slider-row">
+          <input type="range" id="rateSlider" min="1" max="100" value="100" />
+          <div class="pct-display" id="rateDisplay">100%</div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Or type a value</label>
+        <div class="input-row">
+          <input
+            type="number"
+            id="rateInput"
+            inputmode="decimal"
+            placeholder="100"
+            min="1"
+            max="100"
+            step="any"
+          />
+          <span class="unit-badge">%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div class="card result-card">
+      <div class="card-title">Results</div>
+      <div class="result-grid">
+        <div class="result-item primary">
+          <div class="result-label">JPH with Operation Rate</div>
+          <div class="result-value" id="jphEffective">—</div>
+          <div class="result-unit">jobs / hour</div>
+        </div>
+        <div class="result-item">
+          <div class="result-label">Base JPH</div>
+          <div class="result-value" id="jphBase">—</div>
+          <div class="result-unit">jobs / hr</div>
+        </div>
+        <div class="result-item">
+          <div class="result-label">Cycle / Job</div>
+          <div class="result-value" id="cycleSeconds">—</div>
+          <div class="result-unit">seconds</div>
+        </div>
+      </div>
+    </div>
+
+    <p class="formula-note">JPH = (3600 ÷ cycle time in sec) × operation rate %</p>
+
+    <button class="btn-reset" id="resetBtn">Reset</button>
+
+  </main>
+
+  <script>
+    const cycleInput   = document.getElementById('cycleInput');
+    const rateSlider   = document.getElementById('rateSlider');
+    const rateInput    = document.getElementById('rateInput');
+    const rateDisplay  = document.getElementById('rateDisplay');
+    const unitLabel    = document.getElementById('unitLabel');
+    const unitToggle   = document.getElementById('unitToggle');
+    const jphBase      = document.getElementById('jphBase');
+    const jphEffective = document.getElementById('jphEffective');
+    const cycleSeconds = document.getElementById('cycleSeconds');
+    const resetBtn     = document.getElementById('resetBtn');
+
+    let selectedUnit = 'sec'; // sec | min | hr
+
+    // ── Helpers ──────────────────────────────────────────────────────────
+    function toSeconds(value, unit) {
+      if (unit === 'sec') return value;
+      if (unit === 'min') return value * 60;
+      if (unit === 'hr')  return value * 3600;
+    }
+
+    function fmt(n, decimals = 1) {
+      if (!isFinite(n) || n <= 0) return '—';
+      // Show extra decimals only when number is < 10
+      const d = n < 10 ? 2 : decimals;
+      return n.toFixed(d).replace(/\.?0+$/, '');
+    }
+
+    function getRate() {
+      const v = parseFloat(rateInput.value);
+      if (!isNaN(v) && v > 0 && v <= 100) return v;
+      return parseFloat(rateSlider.value) || 100;
+    }
+
+    // ── Calculate ─────────────────────────────────────────────────────────
+    function calculate() {
+      const raw  = parseFloat(cycleInput.value);
+      const rate = getRate();
+
+      if (isNaN(raw) || raw <= 0) {
+        jphBase.textContent      = '—';
+        jphEffective.textContent = '—';
+        cycleSeconds.textContent = '—';
+        [jphBase, jphEffective, cycleSeconds].forEach(el => {
+          el.classList.add('empty');
+        });
+        return;
+      }
+
+      const secs   = toSeconds(raw, selectedUnit);
+      const base   = 3600 / secs;
+      const effect = base * (rate / 100);
+
+      jphBase.textContent      = fmt(base);
+      jphEffective.textContent = fmt(effect);
+      cycleSeconds.textContent = secs < 1 ? secs.toFixed(3) : fmt(secs, 1);
+
+      [jphBase, jphEffective, cycleSeconds].forEach(el => el.classList.remove('empty'));
+    }
+
+    // ── Unit toggle ───────────────────────────────────────────────────────
+    unitToggle.addEventListener('click', e => {
+      const btn = e.target.closest('button');
+      if (!btn) return;
+      unitToggle.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      selectedUnit = btn.dataset.unit;
+      unitLabel.textContent = btn.dataset.unit;
+      calculate();
+    });
+
+    // ── Slider ↔ Input sync ──────────────────────────────────────────────
+    rateSlider.addEventListener('input', () => {
+      rateDisplay.textContent = rateSlider.value + '%';
+      rateInput.value = rateSlider.value;
+      calculate();
+    });
+
+    rateInput.addEventListener('input', () => {
+      let v = parseFloat(rateInput.value);
+      if (!isNaN(v)) {
+        v = Math.min(100, Math.max(1, v));
+        rateSlider.value = v;
+        rateDisplay.textContent = v + '%';
+      }
+      calculate();
+    });
+
+    // ── Cycle time input ─────────────────────────────────────────────────
+    cycleInput.addEventListener('input', calculate);
+
+    // ── Reset ─────────────────────────────────────────────────────────────
+    resetBtn.addEventListener('click', () => {
+      cycleInput.value = '';
+      rateInput.value  = '';
+      rateSlider.value = 100;
+      rateDisplay.textContent = '100%';
+      calculate();
+      cycleInput.focus();
+    });
+
+    // Initial state
+    calculate();
+  </script>
+</body>
+</html>
