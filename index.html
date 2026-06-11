@@ -160,33 +160,6 @@
       white-space: nowrap;
     }
 
-    /* ── Segmented control ── */
-    .seg-control {
-      display: flex;
-      background: var(--input-bg);
-      border: 1.5px solid var(--border);
-      border-radius: 10px;
-      overflow: hidden;
-    }
-
-    .seg-control button {
-      flex: 1;
-      padding: 8px 4px;
-      background: none;
-      border: none;
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.15s, color 0.15s;
-    }
-
-    .seg-control button.active {
-      background: var(--accent);
-      color: #fff;
-      border-radius: 8px;
-    }
-
     /* ── Slider ── */
     .slider-row {
       display: flex;
@@ -357,18 +330,10 @@
     <div class="card">
       <div class="card-title">Cycle Time</div>
       <div class="field">
-        <label>Time Unit</label>
-        <div class="seg-control" id="unitToggle">
-          <button class="active" data-unit="sec">Seconds</button>
-          <button data-unit="min">Minutes</button>
-          <button data-unit="hr">Hours</button>
-        </div>
-      </div>
-      <div class="field">
         <label>Cycle Time per Job</label>
         <div class="input-row">
           <input type="number" id="cycleInput" inputmode="decimal" placeholder="e.g. 45" min="0" step="any" />
-          <span class="unit-badge" id="unitLabel">sec</span>
+          <span class="unit-badge">sec</span>
         </div>
       </div>
     </div>
@@ -419,20 +384,10 @@
     const cycleInput   = document.getElementById('cycleInput');
     const rateSlider   = document.getElementById('rateSlider');
     const rateDisplay  = document.getElementById('rateDisplay');
-    const unitLabel    = document.getElementById('unitLabel');
-    const unitToggle   = document.getElementById('unitToggle');
     const jphBase      = document.getElementById('jphBase');
     const jphEffective = document.getElementById('jphEffective');
     const cycleSeconds = document.getElementById('cycleSeconds');
     const resetBtn     = document.getElementById('resetBtn');
-
-    let selectedUnit = 'sec';
-
-    function toSeconds(value, unit) {
-      if (unit === 'sec') return value;
-      if (unit === 'min') return value * 60;
-      if (unit === 'hr')  return value * 3600;
-    }
 
     function fmt(n, decimals = 1) {
       if (!isFinite(n) || n <= 0) return '—';
@@ -452,7 +407,7 @@
         return;
       }
 
-      const secs   = toSeconds(raw, selectedUnit);
+      const secs   = raw;
       const base   = 3600 / secs;
       const effect = base * (rate / 100);
 
@@ -461,16 +416,6 @@
       cycleSeconds.textContent = secs < 1 ? secs.toFixed(3) : fmt(secs, 1);
       [jphBase, jphEffective, cycleSeconds].forEach(el => el.classList.remove('empty'));
     }
-
-    unitToggle.addEventListener('click', e => {
-      const btn = e.target.closest('button');
-      if (!btn) return;
-      unitToggle.querySelectorAll('button').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      selectedUnit = btn.dataset.unit;
-      unitLabel.textContent = btn.dataset.unit;
-      calculate();
-    });
 
     rateSlider.addEventListener('input', () => {
       rateDisplay.textContent = rateSlider.value + '%';
