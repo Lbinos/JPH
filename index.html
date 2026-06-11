@@ -304,11 +304,16 @@
       color: #22c55e;
     }
 
-    .tct-target {
-      font-size: 9px;
+    .tct-status {
+      font-size: 18px;
+      font-weight: 800;
+      margin-top: 6px;
+      letter-spacing: -0.5px;
       color: var(--muted);
-      margin-top: 3px;
     }
+
+    .result-item.over-tct  .tct-status { color: #ef4444; }
+    .result-item.under-tct .tct-status { color: #22c55e; }
 
     /* inline TCT input inside result box */
     .tct-input-row {
@@ -465,9 +470,7 @@
             <input type="text" id="tctInput" class="tct-inline-input" inputmode="numeric" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="target sec" />
             <button class="decimal-btn-sm" id="tctDecBtn">,</button>
           </div>
-          <div class="result-value" id="cycleSeconds">—</div>
-          <div class="result-unit">actual sec</div>
-          <div class="tct-target" id="tctTarget"></div>
+          <div class="tct-status" id="tctTarget"></div>
         </div>
       </div>
     </div>
@@ -487,7 +490,6 @@
     const rateDisplay  = document.getElementById('rateDisplay');
     const jphBase      = document.getElementById('jphBase');
     const jphEffective = document.getElementById('jphEffective');
-    const cycleSeconds = document.getElementById('cycleSeconds');
     const tctItem      = document.getElementById('tctItem');
     const tctTarget    = document.getElementById('tctTarget');
     const resetBtn     = document.getElementById('resetBtn');
@@ -521,8 +523,7 @@
       if (isNaN(raw) || raw <= 0) {
         jphBase.textContent      = '—';
         jphEffective.textContent = '—';
-        cycleSeconds.textContent = '—';
-        [jphBase, jphEffective, cycleSeconds].forEach(el => el.classList.add('empty'));
+        [jphBase, jphEffective].forEach(el => el.classList.add('empty'));
         return;
       }
 
@@ -532,18 +533,17 @@
 
       jphBase.textContent      = fmt(base);
       jphEffective.textContent = fmt(effect);
-      cycleSeconds.textContent = secs < 1 ? secs.toFixed(3) : fmt(secs, 1);
-      [jphBase, jphEffective, cycleSeconds].forEach(el => el.classList.remove('empty'));
+      [jphBase, jphEffective].forEach(el => el.classList.remove('empty'));
 
       const tct = parseNum(tctInput.value);
       tctItem.classList.remove('over-tct', 'under-tct');
       if (!isNaN(tct) && tct > 0) {
         if (raw > tct) {
           tctItem.classList.add('over-tct');
-          tctTarget.textContent = `TARGET: ${tct}s  ▲ +${fmt(raw - tct, 1)}s`;
+          tctTarget.textContent = `▲ +${fmt(raw - tct, 1)}s`;
         } else {
           tctItem.classList.add('under-tct');
-          tctTarget.textContent = `TARGET: ${tct}s  ✓`;
+          tctTarget.textContent = `✓`;
         }
       } else {
         tctTarget.textContent = '';
