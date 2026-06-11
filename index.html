@@ -289,6 +289,32 @@
       margin-top: 3px;
     }
 
+    /* inline TCT input inside result box */
+    .tct-inline-input {
+      width: 100%;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--muted);
+      font-size: 12px !important;
+      font-weight: 600 !important;
+      padding: 3px 6px !important;
+      text-align: center;
+      outline: none;
+      margin-bottom: 5px;
+      flex-shrink: 0;
+    }
+
+    .tct-inline-input:focus {
+      border-color: var(--accent);
+      color: var(--text);
+    }
+
+    .tct-inline-input::placeholder {
+      font-size: 11px !important;
+      color: var(--border);
+    }
+
     /* ── Bottom row ── */
     .bottom-row {
       display: flex;
@@ -354,16 +380,9 @@
     <div class="card">
       <div class="card-title">Cycle Time</div>
       <div class="field">
-        <label>Actual Cycle Time</label>
+        <label>Cycle Time per Job</label>
         <div class="input-row">
           <input type="number" id="cycleInput" inputmode="decimal" placeholder="e.g. 136" min="0" step="any" />
-          <span class="unit-badge">sec</span>
-        </div>
-      </div>
-      <div class="field">
-        <label>Target Cycle Time (TCT)</label>
-        <div class="input-row">
-          <input type="number" id="tctInput" inputmode="decimal" placeholder="e.g. 120" min="0" step="any" />
           <span class="unit-badge">sec</span>
         </div>
       </div>
@@ -396,9 +415,10 @@
           <div class="result-unit">jobs / hr</div>
         </div>
         <div class="result-item" id="tctItem">
-          <div class="result-label">TCT</div>
+          <div class="result-label">TCT target</div>
+          <input type="number" id="tctInput" class="tct-inline-input" inputmode="decimal" placeholder="e.g. 120 sec" min="0" step="any" />
           <div class="result-value" id="cycleSeconds">—</div>
-          <div class="result-unit">seconds</div>
+          <div class="result-unit">actual sec</div>
           <div class="tct-target" id="tctTarget"></div>
         </div>
       </div>
