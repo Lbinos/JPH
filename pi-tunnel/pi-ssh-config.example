@@ -1,0 +1,13 @@
+# Append to ~/.ssh/config on the RASPBERRY PI (replace the placeholders).
+Host relay
+  HostName RELAY_HOST
+  User tunnel
+  IdentityFile ~/.ssh/id_ed25519
+
+# Reaches the home server through the relay's tunnel port.
+Host homeserver
+  HostName 127.0.0.1
+  Port 2222
+  User YOUR_SERVER_USER
+  ProxyJump relay
+  ServerAliveInterval 30

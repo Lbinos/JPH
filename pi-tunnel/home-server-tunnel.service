@@ -1,0 +1,20 @@
+# Install on the HOME SERVER: /etc/systemd/system/home-server-tunnel.service
+# Keeps a reverse SSH tunnel open to the relay so the Pi can reach this machine's sshd.
+[Unit]
+Description=Reverse SSH tunnel to relay
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=tunnel-client
+Environment=AUTOSSH_GATETIME=0
+ExecStart=/usr/bin/autossh -M 0 -N \
+  -o "ServerAliveInterval=30" -o "ServerAliveCountMax=3" \
+  -o "ExitOnForwardFailure=yes" -o "StrictHostKeyChecking=yes" \
+  -i /home/tunnel-client/.ssh/id_ed25519 \
+  -R 127.0.0.1:2222:127.0.0.1:22 tunnel@RELAY_HOST
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
